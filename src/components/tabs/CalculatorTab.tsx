@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Катушка, Принтер, Настройки } from '@/lib/useStore';
 
@@ -12,6 +12,13 @@ interface Props {
 export default function CalculatorTab({ катушки, принтеры, настройки, setНастройки }: Props) {
   const [filamentId, setFilamentId] = useState<number | null>(катушки[0]?.id ?? null);
   const [printerId, setPrinterId] = useState<number | null>(принтеры[0]?.id ?? null);
+
+  // При первой загрузке подставляем катушку, привязанную к выбранному принтеру
+  useEffect(() => {
+    const привязанная = катушки.find((k) => k.printerId === printerId);
+    if (привязанная) setFilamentId(привязанная.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [weight, setWeight] = useState('50');
   const [hours, setHours] = useState('2');
   const [showSettings, setShowSettings] = useState(false);
@@ -88,7 +95,12 @@ export default function CalculatorTab({ катушки, принтеры, нас
           <label className="mb-1 block text-[11px] uppercase tracking-wide text-muted-foreground">Принтер</label>
           <select
             value={printerId ?? ''}
-            onChange={(e) => setPrinterId(Number(e.target.value))}
+            onChange={(e) => {
+              const id = Number(e.target.value);
+              setPrinterId(id);
+              const привязанная = катушки.find((k) => k.printerId === id);
+              if (привязанная) setFilamentId(привязанная.id);
+            }}
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-farm-blue"
           >
             {принтеры.length === 0 && <option>Нет принтеров</option>}
@@ -96,6 +108,11 @@ export default function CalculatorTab({ катушки, принтеры, нас
               <option key={p.id} value={p.id}>{p.name} • {p.powerWatt}Вт</option>
             ))}
           </select>
+          {принтер && катушка?.printerId === принтер.id && (
+            <p className="mt-1 flex items-center gap-1 text-[11px] text-farm-teal">
+              <Icon name="Link" size={11} /> Катушка подставлена автоматически
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">

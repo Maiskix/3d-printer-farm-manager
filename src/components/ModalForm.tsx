@@ -4,19 +4,21 @@ import Icon from '@/components/ui/icon';
 export interface Поле {
   key: string;
   label: string;
-  type?: 'text' | 'number';
+  type?: 'text' | 'number' | 'select';
   placeholder?: string;
+  options?: { value: string; label: string }[];
 }
 
 interface Props {
   title: string;
   fields: Поле[];
+  initialValues?: Record<string, string>;
   onClose: () => void;
   onSave: (values: Record<string, string>) => void;
 }
 
-export default function ModalForm({ title, fields, onClose, onSave }: Props) {
-  const [values, setValues] = useState<Record<string, string>>({});
+export default function ModalForm({ title, fields, initialValues, onClose, onSave }: Props) {
+  const [values, setValues] = useState<Record<string, string>>(initialValues ?? {});
 
   const сохранить = () => {
     onSave(values);
@@ -47,13 +49,26 @@ export default function ModalForm({ title, fields, onClose, onSave }: Props) {
               <label className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground">
                 {f.label}
               </label>
-              <input
-                type={f.type ?? 'text'}
-                placeholder={f.placeholder}
-                value={values[f.key] ?? ''}
-                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-mono text-sm text-foreground outline-none transition-colors focus:border-farm-blue"
-              />
+              {f.type === 'select' ? (
+                <select
+                  value={values[f.key] ?? ''}
+                  onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-farm-blue"
+                >
+                  <option value="">—</option>
+                  {f.options?.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={f.type ?? 'text'}
+                  placeholder={f.placeholder}
+                  value={values[f.key] ?? ''}
+                  onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-mono text-sm text-foreground outline-none transition-colors focus:border-farm-blue"
+                />
+              )}
             </div>
           ))}
         </div>

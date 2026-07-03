@@ -97,7 +97,7 @@ export default function Index() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-5">
-        {вкладка === 'filaments' && <FilamentsTab катушки={катушки} setКатушки={setКатушки} />}
+        {вкладка === 'filaments' && <FilamentsTab катушки={катушки} setКатушки={setКатушки} принтеры={принтеры} />}
         {вкладка === 'printers' && (
           <PrintersTab
             принтеры={принтеры}

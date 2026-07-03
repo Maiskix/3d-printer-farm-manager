@@ -34,6 +34,7 @@ export interface Катушка {
   purchaseDate: string;
   vendor: string;
   pool: string;
+  printerId: number | null;
 }
 
 export interface ЗадачаТО {
@@ -81,9 +82,9 @@ const ПРИНТЕРЫ_ПО_УМОЛЧАНИЮ: Принтер[] = [
 ];
 
 const КАТУШКИ_ПО_УМОЛЧАНИЮ: Катушка[] = [
-  { id: 1, brand: 'eSun', type: 'PLA+', color: '#1565C0', totalWeight: 1000, currentWeight: 820, pricePerKg: 1400, purchaseDate: '2026-06-01', vendor: 'Top3DShop', pool: 'Синий PLA' },
-  { id: 2, brand: 'Polymaker', type: 'PETG', color: '#26C6DA', totalWeight: 1000, currentWeight: 450, pricePerKg: 1900, purchaseDate: '2026-05-15', vendor: 'Filamentarno', pool: 'Бирюзовый PETG' },
-  { id: 3, brand: 'Bambu', type: 'ABS', color: '#333333', totalWeight: 1000, currentWeight: 180, pricePerKg: 1700, purchaseDate: '2026-04-20', vendor: 'Bambu Lab', pool: 'Чёрный ABS' },
+  { id: 1, brand: 'eSun', type: 'PLA+', color: '#1565C0', totalWeight: 1000, currentWeight: 820, pricePerKg: 1400, purchaseDate: '2026-06-01', vendor: 'Top3DShop', pool: 'Синий PLA', printerId: 1 },
+  { id: 2, brand: 'Polymaker', type: 'PETG', color: '#26C6DA', totalWeight: 1000, currentWeight: 450, pricePerKg: 1900, purchaseDate: '2026-05-15', vendor: 'Filamentarno', pool: 'Бирюзовый PETG', printerId: null },
+  { id: 3, brand: 'Bambu', type: 'ABS', color: '#333333', totalWeight: 1000, currentWeight: 180, pricePerKg: 1700, purchaseDate: '2026-04-20', vendor: 'Bambu Lab', pool: 'Чёрный ABS', printerId: null },
 ];
 
 const ТО_ПО_УМОЛЧАНИЮ: ЗадачаТО[] = [

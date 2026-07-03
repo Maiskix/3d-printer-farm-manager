@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import Icon from '@/components/ui/icon';
 import ModalForm, { Поле } from '@/components/ModalForm';
-import { Катушка } from '@/lib/useStore';
+import { Катушка, Принтер } from '@/lib/useStore';
 
 interface Props {
   катушки: Катушка[];
   setКатушки: (v: Катушка[]) => void;
+  принтеры: Принтер[];
 }
 
 const newId = () => Date.now();
@@ -38,18 +39,30 @@ function Кольцо({ value, color, size = 56 }: { value: number; color: strin
   );
 }
 
-export default function FilamentsTab({ катушки, setКатушки }: Props) {
+const ТИП_ВСЕ = 'все';
+
+export default function FilamentsTab({ катушки, setКатушки, принтеры }: Props) {
   const [открытаФорма, setОткрытаФорма] = useState(false);
+  const [фильтрТипа, setФильтрТипа] = useState(ТИП_ВСЕ);
+
+  const типы = useMemo(() => Array.from(new Set(катушки.map((k) => k.type))), [катушки]);
+
+  const отфильтрованные = useMemo(
+    () => (фильтрТипа === ТИП_ВСЕ ? катушки : катушки.filter((k) => k.type === фильтрТипа)),
+    [катушки, фильтрТипа],
+  );
 
   const пулы = useMemo(() => {
     const группы: Record<string, Катушка[]> = {};
-    катушки.forEach((k) => {
+    отфильтрованные.forEach((k) => {
       const key = k.pool || 'Без пула';
       if (!группы[key]) группы[key] = [];
       группы[key].push(k);
     });
     return группы;
-  }, [катушки]);
+  }, [отфильтрованные]);
+
+  const поляПринтера: { value: string; label: string }[] = принтеры.map((p) => ({ value: String(p.id), label: p.name }));
 
   const поля: Поле[] = [
     { key: 'brand', label: 'Бренд', placeholder: 'eSun' },
@@ -59,6 +72,7 @@ export default function FilamentsTab({ катушки, setКатушки }: Prop
     { key: 'pricePerKg', label: 'Цена за кг, ₽', placeholder: '1400', type: 'number' },
     { key: 'vendor', label: 'Поставщик', placeholder: 'Top3DShop' },
     { key: 'pool', label: 'Пул', placeholder: 'Синий PLA' },
+    { key: 'printerId', label: 'Привязать к принтеру', type: 'select', options: поляПринтера },
   ];
 
   const сохранить = (v: Record<string, string>) => {
@@ -76,8 +90,13 @@ export default function FilamentsTab({ катушки, setКатушки }: Prop
         purchaseDate: new Date().toISOString().slice(0, 10),
         vendor: v.vendor || '—',
         pool: v.pool || 'Без пула',
+        printerId: v.printerId ? Number(v.printerId) : null,
       },
     ]);
+  };
+
+  const привязать = (id: number, printerId: string) => {
+    setКатушки(катушки.map((k) => (k.id === id ? { ...k, printerId: printerId ? Number(printerId) : null } : k)));
   };
 
   const низкий = катушки.filter((k) => k.currentWeight / k.totalWeight < 0.2).length;
@@ -99,10 +118,36 @@ export default function FilamentsTab({ катушки, setКатушки }: Prop
         </button>
       </div>
 
-      {катушки.length === 0 ? (
+      {катушки.length > 0 && (
+        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1">
+          <button
+            onClick={() => setФильтрТипа(ТИП_ВСЕ)}
+            className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
+              фильтрТипа === ТИП_ВСЕ ? 'bg-farm-blue text-white' : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            Все
+          </button>
+          {типы.map((t) => (
+            <button
+              key={t}
+              onClick={() => setФильтрТипа(t)}
+              className={`shrink-0 rounded-lg px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide transition-colors ${
+                фильтрТипа === t ? 'bg-farm-blue text-white' : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {отфильтрованные.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-14 text-center">
           <Icon name="CircleDashed" size={32} className="text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Нет катушек. Добавьте первую.</p>
+          <p className="text-sm text-muted-foreground">
+            {катушки.length === 0 ? 'Нет катушек. Добавьте первую.' : 'Нет катушек этого типа.'}
+          </p>
         </div>
       ) : (
         Object.entries(пулы).map(([pool, list]) => (
@@ -131,6 +176,19 @@ export default function FilamentsTab({ катушки, setКатушки }: Prop
                           <Icon name="TriangleAlert" size={11} /> Низкий уровень пластика
                         </p>
                       )}
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <Icon name="Printer" size={11} className="shrink-0 text-farm-teal" />
+                        <select
+                          value={k.printerId ?? ''}
+                          onChange={(e) => привязать(k.id, e.target.value)}
+                          className="w-full max-w-[160px] rounded-md border border-border bg-background px-1.5 py-1 text-[11px] text-foreground outline-none focus:border-farm-blue"
+                        >
+                          <option value="">Не привязана</option>
+                          {принтеры.map((p) => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                     <button
                       onClick={() => setКатушки(катушки.filter((x) => x.id !== k.id))}
