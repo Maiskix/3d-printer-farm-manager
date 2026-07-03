@@ -29,11 +29,11 @@ export default function ModalForm({ title, fields, onClose, onSave }: Props) {
       onClick={onClose}
     >
       <div
-        className="animate-fade-in w-full max-w-md rounded-t-lg border-2 border-aperture-orange bg-card p-5 shadow-2xl sm:rounded-lg"
+        className="animate-fade-in w-full max-w-md rounded-t-2xl bg-card p-5 shadow-2xl sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold uppercase tracking-widest text-aperture-orange">
+          <h3 className="font-display text-lg font-light tracking-wide text-farm-blue">
             {title}
           </h3>
           <button onClick={onClose} className="text-muted-foreground transition-transform active:scale-90 hover:text-foreground">
@@ -44,7 +44,7 @@ export default function ModalForm({ title, fields, onClose, onSave }: Props) {
         <div className="space-y-3">
           {fields.map((f) => (
             <div key={f.key}>
-              <label className="mb-1 block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              <label className="mb-1 block text-[11px] uppercase tracking-wider text-muted-foreground">
                 {f.label}
               </label>
               <input
@@ -52,7 +52,7 @@ export default function ModalForm({ title, fields, onClose, onSave }: Props) {
                 placeholder={f.placeholder}
                 value={values[f.key] ?? ''}
                 onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-                className="w-full rounded-sm border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-aperture-orange"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2.5 font-mono text-sm text-foreground outline-none transition-colors focus:border-farm-blue"
               />
             </div>
           ))}
@@ -60,7 +60,7 @@ export default function ModalForm({ title, fields, onClose, onSave }: Props) {
 
         <button
           onClick={сохранить}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-sm bg-aperture-orange py-3 font-display text-sm font-semibold uppercase tracking-widest text-white transition-transform active:scale-95"
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-farm-blue py-3 font-display text-sm font-medium uppercase tracking-widest text-white transition-transform active:scale-95"
         >
           <Icon name="Check" size={16} />
           Сохранить
