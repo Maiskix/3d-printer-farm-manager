@@ -5,6 +5,7 @@ import PrintersTab from '@/components/tabs/PrintersTab';
 import CalculatorTab from '@/components/tabs/CalculatorTab';
 import StatsTab from '@/components/tabs/StatsTab';
 import SettingsTab from '@/components/tabs/SettingsTab';
+import { useFarmMonitor } from '@/hooks/useFarmMonitor';
 import {
   useStore,
   ДЕФОЛТЫ,
@@ -35,6 +36,8 @@ export default function Index() {
   const [запчасти, setЗапчасти] = useStore<Запчасть[]>('af_parts', ДЕФОЛТЫ.запчасти);
   const [журнал] = useStore<Печать[]>('af_jobs', ДЕФОЛТЫ.журнал);
   const [настройки, setНастройки] = useStore<Настройки>('af_settings', ДЕФОЛТЫ.настройки);
+
+  useFarmMonitor({ принтеры, setПринтеры, катушки, настройки });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);

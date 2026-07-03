@@ -131,6 +131,11 @@ export default function SettingsTab({ настройки, setНастройки 
               <Icon name={отправка ? 'Loader2' : 'Send'} size={14} className={отправка ? 'animate-spin' : ''} />
               Отправить тестовое сообщение
             </button>
+
+            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="h-1.5 w-1.5 shrink-0 animate-pulse-soft rounded-full bg-farm-teal" />
+              Автомониторинг активен: принтеры опрашиваются каждые 20 секунд, катушки проверяются при изменении
+            </p>
           </div>
         )}
       </div>
