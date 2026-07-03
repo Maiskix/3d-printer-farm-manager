@@ -23,6 +23,24 @@
       "expectedStatus": 200,
       "expectedBody": { "connected": false },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Загрузка без имени файла возвращает ошибку 400",
+      "method": "POST",
+      "path": "/",
+      "body": { "ip": "10.255.255.1", "port": "7125", "action": "upload" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Удаление без имени файла возвращает ошибку 400",
+      "method": "POST",
+      "path": "/",
+      "body": { "ip": "10.255.255.1", "port": "7125", "action": "delete" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
     }
   ]
 }

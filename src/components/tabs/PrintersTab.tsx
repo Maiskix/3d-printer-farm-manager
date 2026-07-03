@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import Icon from '@/components/ui/icon';
 import ModalForm, { Поле } from '@/components/ModalForm';
+import PrinterFilesModal from '@/components/PrinterFilesModal';
 import { Принтер, ЗадачаТО, Запчасть } from '@/lib/useStore';
 import { запросMoonraker } from '@/lib/moonraker';
 
@@ -34,6 +35,7 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
   const [форма, setФорма] = useState<'printer' | 'maintenance' | 'part' | null>(null);
   const [раздел, setРаздел] = useState<'printers' | 'maintenance' | 'parts'>('printers');
   const [загрузка, setЗагрузка] = useState<number | null>(null);
+  const [файлыПринтера, setФайлыПринтера] = useState<Принтер | null>(null);
 
   // Проверка связи с принтером и обновление статуса на основе реального ответа Moonraker
   const проверитьСвязь = async (p: Принтер) => {
@@ -261,7 +263,7 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
                   <span className="flex items-center gap-1"><Icon name="Clock" size={12} /> {p.totalHours}ч</span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="mb-2 grid grid-cols-3 gap-2">
                   <button onClick={() => управлять(p, 'start')} disabled={загрузка === p.id} className="flex items-center justify-center gap-1 rounded-lg bg-farm-blue py-2 text-[11px] font-medium uppercase text-white transition-transform active:scale-95 disabled:opacity-50">
                     <Icon name="Play" size={12} /> Старт
                   </button>
@@ -272,6 +274,13 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
                     <Icon name="Square" size={12} /> Стоп
                   </button>
                 </div>
+
+                <button
+                  onClick={() => setФайлыПринтера(p)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-farm-blue py-2 text-[11px] font-medium uppercase tracking-wide text-farm-blue transition-transform active:scale-95"
+                >
+                  <Icon name="FileUp" size={13} /> Файлы и загрузка G-кода
+                </button>
               </div>
             ))
           )}
@@ -362,6 +371,14 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
 
       {форма && (
         <ModalForm title={модалка[форма].title} fields={модалка[форма].fields} onClose={() => setФорма(null)} onSave={сохранить} />
+      )}
+
+      {файлыПринтера && (
+        <PrinterFilesModal
+          принтер={файлыПринтера}
+          onClose={() => setФайлыПринтера(null)}
+          onStarted={() => setПринтеры(принтеры.map((x) => (x.id === файлыПринтера.id ? { ...x, status: 'печать' } : x)))}
+        />
       )}
     </div>
   );
