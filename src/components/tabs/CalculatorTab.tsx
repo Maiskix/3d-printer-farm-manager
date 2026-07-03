@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Катушка, Принтер, Настройки } from '@/lib/useStore';
+import { число } from '@/lib/parseNumber';
 
 interface Props {
   катушки: Катушка[];
@@ -25,15 +26,22 @@ export default function CalculatorTab({ катушки, принтеры, нас
   const принтер = принтеры.find((p) => p.id === printerId);
 
   const результат = useMemo(() => {
-    const w = Number(weight) || 0;
-    const h = Number(hours) || 0;
+    const w = число(weight, 0);
+    const h = число(hours, 0);
+    const tariffKwh = число(настройки.tariffKwh, 0);
+    const markupPercent = число(настройки.markupPercent, 0);
 
-    const costFilament = катушка ? (w / 1000) * катушка.pricePerKg : 0;
-    const costEnergy = принтер ? (принтер.powerWatt / 1000) * h * настройки.tariffKwh : 0;
-    const costDepreciation = принтер && принтер.lifetimeHours > 0 ? (принтер.cost / принтер.lifetimeHours) * h : 0;
+    const цена_кг = катушка ? число(катушка.pricePerKg, 0) : 0;
+    const мощность = принтер ? число(принтер.powerWatt, 0) : 0;
+    const стоимостьПринтера = принтер ? число(принтер.cost, 0) : 0;
+    const ресурс = принтер ? число(принтер.lifetimeHours, 0) : 0;
+
+    const costFilament = катушка ? (w / 1000) * цена_кг : 0;
+    const costEnergy = принтер ? (мощность / 1000) * h * tariffKwh : 0;
+    const costDepreciation = принтер && ресурс > 0 ? (стоимостьПринтера / ресурс) * h : 0;
 
     const себестоимость = costFilament + costEnergy + costDepreciation;
-    const цена = себестоимость * (1 + настройки.markupPercent / 100);
+    const цена = себестоимость * (1 + markupPercent / 100);
 
     return { costFilament, costEnergy, costDepreciation, себестоимость, цена };
   }, [weight, hours, катушка, принтер, настройки]);

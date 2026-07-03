@@ -2,7 +2,7 @@ import func2url from '../../backend/func2url.json';
 
 // ==================== КЛИЕНТ MOONRAKER API ====================
 
-type Действие = 'info' | 'status' | 'start' | 'pause' | 'resume' | 'cancel' | 'list' | 'delete' | 'upload';
+type Действие = 'info' | 'status' | 'start' | 'pause' | 'resume' | 'cancel' | 'list' | 'delete' | 'upload' | 'scan';
 
 export interface ФайлПринтера {
   path: string;
@@ -10,9 +10,17 @@ export interface ФайлПринтера {
   modified: number;
 }
 
+export interface НайденныйПринтер {
+  ip: string;
+  port: string;
+  hostname: string;
+  state: string;
+}
+
 interface ОтветПрокси {
   connected: boolean;
   error?: string;
+  printers?: НайденныйПринтер[];
   data?: {
     result?: {
       status?: {
@@ -28,12 +36,13 @@ interface ОтветПрокси {
 const PROXY_URL = (func2url as Record<string, string>)['moonraker-proxy'];
 
 interface ЗапросПараметры {
-  ip: string;
+  ip?: string;
   port: string;
-  apiKey: string;
+  apiKey?: string;
   action: Действие;
   filename?: string;
   fileContent?: string;
+  subnet?: string;
 }
 
 async function запрос(params: ЗапросПараметры): Promise<ОтветПрокси> {
@@ -82,4 +91,9 @@ export async function загрузитьФайл(
   fileContent: string,
 ): Promise<ОтветПрокси> {
   return запрос({ ip, port, apiKey, action: 'upload', filename, fileContent });
+}
+
+// Поиск принтеров с запущенным Moonraker в локальной подсети (например '192.168.1')
+export async function найтиПринтерыВСети(subnet: string, port = '7125'): Promise<ОтветПрокси> {
+  return запрос({ action: 'scan', subnet, port });
 }

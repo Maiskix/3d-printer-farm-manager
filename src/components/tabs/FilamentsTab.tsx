@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import Icon from '@/components/ui/icon';
 import ModalForm, { Поле } from '@/components/ModalForm';
 import { Катушка, Принтер } from '@/lib/useStore';
+import { число } from '@/lib/parseNumber';
 
 interface Props {
   катушки: Катушка[];
@@ -76,7 +77,7 @@ export default function FilamentsTab({ катушки, setКатушки, при
   ];
 
   const сохранить = (v: Record<string, string>) => {
-    const w = Number(v.totalWeight) || 1000;
+    const w = число(v.totalWeight, 1000);
     setКатушки([
       ...катушки,
       {
@@ -86,20 +87,20 @@ export default function FilamentsTab({ катушки, setКатушки, при
         color: v.color || '#1565C0',
         totalWeight: w,
         currentWeight: w,
-        pricePerKg: Number(v.pricePerKg) || 0,
+        pricePerKg: число(v.pricePerKg, 0),
         purchaseDate: new Date().toISOString().slice(0, 10),
         vendor: v.vendor || '—',
         pool: v.pool || 'Без пула',
-        printerId: v.printerId ? Number(v.printerId) : null,
+        printerId: v.printerId ? число(v.printerId, 0) || null : null,
       },
     ]);
   };
 
   const привязать = (id: number, printerId: string) => {
-    setКатушки(катушки.map((k) => (k.id === id ? { ...k, printerId: printerId ? Number(printerId) : null } : k)));
+    setКатушки(катушки.map((k) => (k.id === id ? { ...k, printerId: printerId ? число(printerId, 0) || null : null } : k)));
   };
 
-  const низкий = катушки.filter((k) => k.currentWeight / k.totalWeight < 0.2).length;
+  const низкий = катушки.filter((k) => k.totalWeight > 0 && k.currentWeight / k.totalWeight < 0.2).length;
 
   return (
     <div className="space-y-6 pb-24">
@@ -159,7 +160,7 @@ export default function FilamentsTab({ катушки, setКатушки, при
             </div>
             <div className="space-y-2">
               {list.map((k) => {
-                const процент = Math.round((k.currentWeight / k.totalWeight) * 100);
+                const процент = k.totalWeight > 0 ? Math.round((k.currentWeight / k.totalWeight) * 100) : 0;
                 const низкийУровень = процент < 20;
                 return (
                   <div key={k.id} className="group flex items-center gap-3 overflow-hidden rounded-2xl bg-card p-3 shadow-sm">
@@ -170,7 +171,7 @@ export default function FilamentsTab({ катушки, setКатушки, при
                       <p className="text-xs text-muted-foreground">
                         {k.currentWeight} / {k.totalWeight} г • {k.vendor}
                       </p>
-                      <p className="font-mono text-[11px] text-muted-foreground">₽{k.pricePerKg}/кг</p>
+                      <p className="font-mono text-[11px] text-muted-foreground">₽{Number.isFinite(k.pricePerKg) ? k.pricePerKg : 0}/кг</p>
                       {низкийУровень && (
                         <p className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-destructive">
                           <Icon name="TriangleAlert" size={11} /> Низкий уровень пластика

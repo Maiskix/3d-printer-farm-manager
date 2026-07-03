@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import Icon from '@/components/ui/icon';
 import { Печать, Принтер, Катушка } from '@/lib/useStore';
+import { число } from '@/lib/parseNumber';
 
 interface Props {
   журнал: Печать[];
@@ -20,21 +21,21 @@ export default function StatsTab({ журнал, принтеры, катушк�
   }, [журнал]);
 
   const затраты = useMemo(
-    () => журнал.reduce((sum, j) => sum + j.costFilament + j.costEnergy, 0),
+    () => журнал.reduce((sum, j) => sum + число(j.costFilament, 0) + число(j.costEnergy, 0), 0),
     [журнал],
   );
 
   const расходПоТипу = useMemo(() => {
     const группы: Record<string, number> = {};
     катушки.forEach((k) => {
-      const использовано = k.totalWeight - k.currentWeight;
+      const использовано = число(k.totalWeight, 0) - число(k.currentWeight, 0);
       группы[k.type] = (группы[k.type] || 0) + использовано;
     });
     return Object.entries(группы).map(([name, value]) => ({ name, value })).filter((d) => d.value > 0);
   }, [катушки]);
 
   const часыПоПринтерам = useMemo(
-    () => принтеры.map((p) => ({ name: p.name, часы: p.totalHours })),
+    () => принтеры.map((p) => ({ name: p.name, часы: число(p.totalHours, 0) })),
     [принтеры],
   );
 
@@ -127,8 +128,8 @@ export default function StatsTab({ журнал, принтеры, катушк�
                   <p className="text-[11px] text-muted-foreground">{j.printerName} • {j.date}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-mono text-sm text-foreground">{j.weightUsed}г</p>
-                  <p className="font-mono text-[11px] text-muted-foreground">₽{(j.costFilament + j.costEnergy).toFixed(0)}</p>
+                  <p className="font-mono text-sm text-foreground">{число(j.weightUsed, 0)}г</p>
+                  <p className="font-mono text-[11px] text-muted-foreground">₽{(число(j.costFilament, 0) + число(j.costEnergy, 0)).toFixed(0)}</p>
                 </div>
                 <span className={`ml-3 flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium uppercase ${
                   j.status === 'успех' ? 'bg-farm-teal/15 text-farm-teal' : 'bg-destructive/15 text-destructive'

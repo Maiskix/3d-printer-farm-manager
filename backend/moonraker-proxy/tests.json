@@ -41,6 +41,15 @@
       "expectedStatus": 400,
       "expectedBody": { "error": "string" },
       "bodyMatcher": "partial"
+    },
+    {
+      "name": "Сканирование без подсети возвращает ошибку 400",
+      "method": "POST",
+      "path": "/",
+      "body": { "action": "scan" },
+      "expectedStatus": 400,
+      "expectedBody": { "error": "string" },
+      "bodyMatcher": "partial"
     }
   ]
 }

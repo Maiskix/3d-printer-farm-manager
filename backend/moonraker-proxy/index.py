@@ -4,6 +4,7 @@ import socket
 import urllib.error
 import urllib.request
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 CORS_HEADERS = {
     'Access-Control-Allow-Origin': '*',
@@ -58,11 +59,48 @@ def загрузить_файл(url: str, filename: str, file_content_b64: str, 
         return json.loads(resp.read().decode('utf-8'))
 
 
+def проверить_адрес(ip: str, port: str, timeout: float = 0.6):
+    '''Быстрая проверка одного IP на наличие Moonraker (используется при сканировании сети)'''
+    try:
+        url = f'http://{ip}:{port}/printer/info'
+        req = urllib.request.Request(url, method='GET')
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+        result = data.get('result', {})
+        return {
+            'ip': ip,
+            'port': port,
+            'hostname': result.get('hostname', ip),
+            'state': result.get('state', 'unknown'),
+        }
+    except Exception:
+        return None
+
+
+def сканировать_сеть(subnet: str, port: str):
+    '''
+    Параллельно опрашивает адреса subnet.1 .. subnet.254 (например '192.168.1')
+    на предмет запущенного Moonraker и возвращает список найденных принтеров.
+    '''
+    найдено = []
+    with ThreadPoolExecutor(max_workers=64) as executor:
+        futures = {
+            executor.submit(проверить_адрес, f'{subnet}.{i}', port): i
+            for i in range(1, 255)
+        }
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                найдено.append(result)
+    return найдено
+
+
 def handler(event: dict, context) -> dict:
     '''
     Прокси для подключения к принтеру по Moonraker API.
     Поддерживает: info, status, start (с filename), pause, resume, cancel,
-    list (список файлов на принтере), delete (удаление файла), upload (загрузка G-кода).
+    list (список файлов на принтере), delete (удаление файла), upload (загрузка G-кода),
+    scan (поиск принтеров в локальной подсети).
     '''
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': CORS_HEADERS, 'body': ''}
@@ -78,8 +116,15 @@ def handler(event: dict, context) -> dict:
     action = body.get('action') or 'status'
     filename = (body.get('filename') or '').strip()
     file_content = body.get('fileContent')
+    subnet = (body.get('subnet') or '').strip()
 
     resp_headers = {**CORS_HEADERS, 'Content-Type': 'application/json'}
+
+    if action == 'scan':
+        if not subnet:
+            return {'statusCode': 400, 'headers': resp_headers, 'body': json.dumps({'error': 'Не указана подсеть'})}
+        printers = сканировать_сеть(subnet, port)
+        return {'statusCode': 200, 'headers': resp_headers, 'body': json.dumps({'connected': True, 'printers': printers})}
 
     if not ip:
         return {'statusCode': 400, 'headers': resp_headers, 'body': json.dumps({'error': 'IP-адрес не указан'})}

@@ -3,8 +3,10 @@ import { toast } from 'sonner';
 import Icon from '@/components/ui/icon';
 import ModalForm, { Поле } from '@/components/ModalForm';
 import PrinterFilesModal from '@/components/PrinterFilesModal';
+import NetworkScanModal from '@/components/NetworkScanModal';
 import { Принтер, ЗадачаТО, Запчасть } from '@/lib/useStore';
-import { запросMoonraker } from '@/lib/moonraker';
+import { запросMoonraker, НайденныйПринтер } from '@/lib/moonraker';
+import { число } from '@/lib/parseNumber';
 
 interface Props {
   принтеры: Принтер[];
@@ -36,6 +38,34 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
   const [раздел, setРаздел] = useState<'printers' | 'maintenance' | 'parts'>('printers');
   const [загрузка, setЗагрузка] = useState<number | null>(null);
   const [файлыПринтера, setФайлыПринтера] = useState<Принтер | null>(null);
+  const [поискВСети, setПоискВСети] = useState(false);
+
+  const добавитьНайденный = (найденный: НайденныйПринтер) => {
+    setПринтеры([
+      ...принтеры,
+      {
+        id: newId(),
+        name: найденный.hostname || `Принтер-${найденный.ip.split('.').pop()}`,
+        model: 'Обнаружен в сети',
+        status: 'простой',
+        progress: 0,
+        nozzle: 24,
+        bed: 23,
+        ip: найденный.ip,
+        port: найденный.port,
+        apiKey: '',
+        totalHours: 0,
+        lastServiceDate: new Date().toISOString().slice(0, 10),
+        nozzleSize: 0.4,
+        powerWatt: 300,
+        cost: 0,
+        lifetimeHours: 8000,
+        job: '—',
+        eta: '—',
+      },
+    ]);
+    toast.success(`${найденный.hostname || найденный.ip} добавлен в ферму`);
+  };
 
   // Проверка связи с принтером и обновление статуса на основе реального ответа Moonraker
   const проверитьСвязь = async (p: Принтер) => {
@@ -139,17 +169,17 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
           apiKey: v.apiKey || '',
           totalHours: 0,
           lastServiceDate: new Date().toISOString().slice(0, 10),
-          nozzleSize: Number(v.nozzleSize) || 0.4,
-          powerWatt: Number(v.powerWatt) || 300,
-          cost: Number(v.cost) || 0,
-          lifetimeHours: Number(v.lifetimeHours) || 8000,
+          nozzleSize: число(v.nozzleSize, 0.4),
+          powerWatt: число(v.powerWatt, 300),
+          cost: число(v.cost, 0),
+          lifetimeHours: число(v.lifetimeHours, 8000),
           job: '—',
           eta: '—',
         },
       ]);
     } else if (форма === 'maintenance') {
-      const interval = Number(v.intervalHours) || 200;
-      const last = Number(v.lastPerformedHours) || 0;
+      const interval = число(v.intervalHours, 200);
+      const last = число(v.lastPerformedHours, 0);
       setТО([
         ...то,
         {
@@ -164,7 +194,7 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
     } else if (форма === 'part') {
       setЗапчасти([
         ...запчасти,
-        { id: newId(), name: v.name || 'Запчасть', qty: Number(v.qty) || 0, min: Number(v.min) || 1, compatibleWith: v.compatibleWith || '—' },
+        { id: newId(), name: v.name || 'Запчасть', qty: число(v.qty, 0), min: число(v.min, 1), compatibleWith: v.compatibleWith || '—' },
       ]);
     }
   };
@@ -205,12 +235,20 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
       {/* СТАНКИ */}
       {раздел === 'printers' && (
         <div className="space-y-3">
-          <button
-            onClick={() => setФорма('printer')}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-farm-blue py-2.5 text-xs font-medium uppercase tracking-wide text-farm-blue transition-transform active:scale-95"
-          >
-            <Icon name="Plus" size={14} /> Добавить принтер
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setФорма('printer')}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-farm-blue py-2.5 text-xs font-medium uppercase tracking-wide text-farm-blue transition-transform active:scale-95"
+            >
+              <Icon name="Plus" size={14} /> Добавить вручную
+            </button>
+            <button
+              onClick={() => setПоискВСети(true)}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-farm-teal py-2.5 text-xs font-medium uppercase tracking-wide text-farm-teal transition-transform active:scale-95"
+            >
+              <Icon name="Search" size={14} /> Найти в сети
+            </button>
+          </div>
 
           {принтеры.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border py-14 text-center">
@@ -305,7 +343,9 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
             то.map((t) => {
               const printer = принтеры.find((p) => p.name === t.printerName);
               const текущиеЧасы = printer?.totalHours ?? t.lastPerformedHours;
-              const прогресс = Math.min(100, Math.round(((текущиеЧасы - t.lastPerformedHours) / t.intervalHours) * 100));
+              const прогресс = t.intervalHours > 0
+                ? Math.min(100, Math.max(0, Math.round(((текущиеЧасы - t.lastPerformedHours) / t.intervalHours) * 100)))
+                : 0;
               return (
                 <div key={t.id} className="group rounded-2xl bg-card p-3.5 shadow-sm">
                   <div className="mb-1.5 flex items-center justify-between">
@@ -378,6 +418,14 @@ export default function PrintersTab({ принтеры, setПринтеры, т�
           принтер={файлыПринтера}
           onClose={() => setФайлыПринтера(null)}
           onStarted={() => setПринтеры(принтеры.map((x) => (x.id === файлыПринтера.id ? { ...x, status: 'печать' } : x)))}
+        />
+      )}
+
+      {поискВСети && (
+        <NetworkScanModal
+          onClose={() => setПоискВСети(false)}
+          onAdd={добавитьНайденный}
+          существующиеIP={принтеры.map((p) => p.ip)}
         />
       )}
     </div>
