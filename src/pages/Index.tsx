@@ -4,6 +4,7 @@ import FilamentsTab from '@/components/tabs/FilamentsTab';
 import PrintersTab from '@/components/tabs/PrintersTab';
 import CalculatorTab from '@/components/tabs/CalculatorTab';
 import StatsTab from '@/components/tabs/StatsTab';
+import SettingsTab from '@/components/tabs/SettingsTab';
 import {
   useStore,
   ДЕФОЛТЫ,
@@ -15,7 +16,7 @@ import {
   Настройки,
 } from '@/lib/useStore';
 
-type Вкладка = 'filaments' | 'printers' | 'calculator' | 'stats';
+type Вкладка = 'filaments' | 'printers' | 'calculator' | 'stats' | 'settings';
 
 const ВКЛАДКИ: { key: Вкладка; label: string; icon: string }[] = [
   { key: 'filaments', label: 'Катушки', icon: 'Disc3' },
@@ -92,6 +93,15 @@ export default function Index() {
             >
               <Icon name={dark ? 'Sun' : 'Moon'} size={17} />
             </button>
+            <button
+              onClick={() => setВкладка('settings')}
+              className={`flex h-9 w-9 items-center justify-center rounded-full transition-transform active:scale-90 hover:text-farm-blue ${
+                вкладка === 'settings' ? 'text-farm-blue' : 'text-muted-foreground'
+              }`}
+              title="Настройки"
+            >
+              <Icon name="Settings" size={17} />
+            </button>
           </div>
         </div>
       </header>
@@ -109,9 +119,10 @@ export default function Index() {
           />
         )}
         {вкладка === 'calculator' && (
-          <CalculatorTab катушки={катушки} принтеры={принтеры} настройки={настройки} setНастройки={setНастройки} />
+          <CalculatorTab катушки={катушки} принтеры={принтеры} настройки={настройки} />
         )}
         {вкладка === 'stats' && <StatsTab журнал={журнал} принтеры={принтеры} катушки={катушки} />}
+        {вкладка === 'settings' && <SettingsTab настройки={настройки} setНастройки={setНастройки} />}
       </main>
 
       {/* НИЖНЯЯ НАВИГАЦИЯ */}

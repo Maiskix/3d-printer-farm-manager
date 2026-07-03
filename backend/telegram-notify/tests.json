@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS запрос возвращает CORS-заголовки",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Запрос без токена возвращает ошибку 400",
+      "method": "POST",
+      "path": "/",
+      "body": { "chatId": "123", "text": "Тест" },
+      "expectedStatus": 400,
+      "expectedBody": { "ok": false },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Запрос без текста возвращает ошибку 400",
+      "method": "POST",
+      "path": "/",
+      "body": { "token": "123:abc", "chatId": "123" },
+      "expectedStatus": 400,
+      "expectedBody": { "ok": false },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

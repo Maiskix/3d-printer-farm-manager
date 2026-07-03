@@ -71,6 +71,14 @@ export interface Печать {
 export interface Настройки {
   tariffKwh: number;
   markupPercent: number;
+  telegramEnabled: boolean;
+  telegramToken: string;
+  telegramChatId: string;
+  notifyPrintDone: boolean;
+  notifyError: boolean;
+  notifyLowFilament: boolean;
+  notifyMaintenance: boolean;
+  notifyLowParts: boolean;
 }
 
 // ==================== СУЩЕСТВУЮЩИЕ ПРИНТЕРЫ (стартовый набор) ====================
@@ -107,6 +115,14 @@ const ЖУРНАЛ_ПО_УМОЛЧАНИЮ: Печать[] = [
 const НАСТРОЙКИ_ПО_УМОЛЧАНИЮ: Настройки = {
   tariffKwh: 5.5,
   markupPercent: 30,
+  telegramEnabled: false,
+  telegramToken: '',
+  telegramChatId: '',
+  notifyPrintDone: true,
+  notifyError: true,
+  notifyLowFilament: true,
+  notifyMaintenance: true,
+  notifyLowParts: true,
 };
 
 // ==================== ХУК ЛОКАЛЬНОГО ХРАНИЛИЩА ====================

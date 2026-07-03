@@ -6,10 +6,9 @@ interface Props {
   катушки: Катушка[];
   принтеры: Принтер[];
   настройки: Настройки;
-  setНастройки: (v: Настройки) => void;
 }
 
-export default function CalculatorTab({ катушки, принтеры, настройки, setНастройки }: Props) {
+export default function CalculatorTab({ катушки, принтеры, настройки }: Props) {
   const [filamentId, setFilamentId] = useState<number | null>(катушки[0]?.id ?? null);
   const [printerId, setPrinterId] = useState<number | null>(принтеры[0]?.id ?? null);
 
@@ -21,7 +20,6 @@ export default function CalculatorTab({ катушки, принтеры, нас
   }, []);
   const [weight, setWeight] = useState('50');
   const [hours, setHours] = useState('2');
-  const [showSettings, setShowSettings] = useState(false);
 
   const катушка = катушки.find((k) => k.id === filamentId);
   const принтер = принтеры.find((p) => p.id === printerId);
@@ -42,39 +40,10 @@ export default function CalculatorTab({ катушки, принтеры, нас
 
   return (
     <div className="space-y-5 pb-24">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-display text-2xl font-light text-foreground">Калькулятор</h2>
-          <p className="text-xs text-muted-foreground">Расчёт себестоимости печати</p>
-        </div>
-        <button onClick={() => setShowSettings(!showSettings)} className="text-muted-foreground transition-transform active:scale-90 hover:text-farm-blue">
-          <Icon name="Settings" size={20} />
-        </button>
+      <div>
+        <h2 className="font-display text-2xl font-light text-foreground">Калькулятор</h2>
+        <p className="text-xs text-muted-foreground">Расчёт себестоимости печати</p>
       </div>
-
-      {showSettings && (
-        <div className="animate-fade-in space-y-3 rounded-2xl bg-card p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Настройки расчёта</p>
-          <div>
-            <label className="mb-1 block text-[11px] text-muted-foreground">Тариф электроэнергии, ₽/кВт·ч</label>
-            <input
-              type="number"
-              value={настройки.tariffKwh}
-              onChange={(e) => setНастройки({ ...настройки, tariffKwh: Number(e.target.value) })}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-farm-blue"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-[11px] text-muted-foreground">Наценка для продажи, %</label>
-            <input
-              type="number"
-              value={настройки.markupPercent}
-              onChange={(e) => setНастройки({ ...настройки, markupPercent: Number(e.target.value) })}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none focus:border-farm-blue"
-            />
-          </div>
-        </div>
-      )}
 
       <div className="space-y-3 rounded-2xl bg-card p-4 shadow-sm">
         <div>
