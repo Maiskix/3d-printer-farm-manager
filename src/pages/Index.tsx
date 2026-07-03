@@ -62,8 +62,12 @@ export default function Index() {
       <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-farm-blue">
-              <Icon name="Boxes" className="text-white" size={18} />
+            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm">
+              <img
+                src="https://cdn.poehali.dev/projects/d61aed03-1c27-4ecf-8b6f-a6d91f0aac89/files/3f2db3b1-43b6-4008-8407-8d03099ab053.jpg"
+                alt="Логотип"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div>
               <h1 className="font-display text-base font-light leading-none text-foreground">
